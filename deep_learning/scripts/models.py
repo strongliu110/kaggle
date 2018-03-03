@@ -11,7 +11,12 @@ from keras.layers import Flatten
 from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 
-def get_pretrained_model(arch, input_shape):
+from keras.optimizers import SGD
+from keras.optimizers import RMSprop
+from keras.optimizers import Adam
+
+
+def predefined_model(arch, input_shape, num_classes):
     if arch == 'vgg16':
         model = VGG16(weights='imagenet', include_top=False, input_shape=input_shape)
     elif arch == 'vgg19':
@@ -29,13 +34,14 @@ def get_pretrained_model(arch, input_shape):
     x = Dense(256, activation='relu')(x)
     x = Dropout(0.5)(x)
 
-    predictions = Dense(10, activation='softmax')(x)
+    predictions = Dense(num_classes, activation='softmax')(x)
 
     model = Model(inputs=model.input, outputs=predictions)
 
     return model
 
-def basic_model(input_shape, filters=64, kernel=3):
+
+def basic_model(input_shape, num_classes, filters=64, kernel=3):
     model = Sequential()
 
     model.add(Conv2D(filters=filters, kernel_size=(kernel, kernel), input_shape=input_shape, activation='relu'))
@@ -58,6 +64,30 @@ def basic_model(input_shape, filters=64, kernel=3):
     model.add(Dense(256, activation="relu"))
     model.add(Dropout(0.5))
 
-    model.add(Dense(10, activation="softmax"))
+    model.add(Dense(num_classes, activation="softmax"))
+
+    return model
+
+
+def get_compile_model(arch, input_shape, num_classes, opt="adam"):
+    if arch == 'basic':
+        model = basic_model(input_shape, num_classes)
+    else:
+        model = predefined_model(arch, input_shape, num_classes)
+
+    # 数据稀疏时，推荐采用自适应算法：RMSprop，Adam. lr:学习率, epsilon:防止除0错误
+    if opt == "sgd":
+        optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)  # 用时长，可能困于鞍点
+    elif opt == "rmsProp":
+        optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-06)  # RNN效果好
+    elif opt == "adam":
+        optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    else:
+        raise Exception("Not supported opt: {}".format(opt))
+
+    if num_classes == 2:
+        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+    else:
+        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
