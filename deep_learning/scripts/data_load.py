@@ -25,9 +25,10 @@ class Label(object):
 
         return clear_train_label.tolist()
 
-    def decode(self, hot_code):
-        num = np.argmax(hot_code, axis=1)
-        return list(self.le.inverse_transform[num])
+    def decode(self, pred_Y):
+        pred_num = np.argmax(pred_Y, axis=1)  # # 取最大概率
+        pred_label = self.le.classes_[pred_num]
+        return pred_label
 
 
 def get_data_df(basepath):
@@ -59,12 +60,15 @@ def get_data_df(basepath):
 
 
 def get_test_df(basepath):
+    img_names = []
     img_paths = []
-    for name in glob(basepath + "*"):
-        img_path = os.path.join(basepath, name)
+    for path in glob(basepath + "*"):
+        img_names.append(path.split('/')[-1])
+        img_path = os.path.join(basepath, path)
         img_paths.append(img_path)
 
-    data_df = pd.DataFrame({'Path': img_paths})
+    data_df = pd.DataFrame({'Name': img_names,
+                            'Path': img_paths})
     return data_df
 
 

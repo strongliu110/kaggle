@@ -5,6 +5,7 @@ import cv2
 
 from scripts.data_load import *
 
+
 class DataSet(object):
 
     def __init__(self):
@@ -14,8 +15,7 @@ class DataSet(object):
         self.val_datas = None
         self.val_labels = None
 
-        # self.test_datas = []
-        # self.test_labels = []
+        self.test_datas = None
 
     def load_kfold_train_val(self, data_df, input_shape):
         train_index, test_index = get_kfold_train_val_idx(data_df)
@@ -42,3 +42,11 @@ class DataSet(object):
         self.val_datas = np.array(val_datas)
         self.val_labels = np.array(val_labels)
 
+    def load_test(self, test_df, input_shape):
+        test_datas = []
+        for path in test_df['Path']:
+            test_img = cv2.resize(cv2.imread(path), (input_shape[0], input_shape[1]))
+            test_img = test_img / 255  # 归一化
+            test_datas.append(test_img)
+
+        self.test_datas = np.array(test_datas)

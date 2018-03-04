@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 from scripts.data_load import *
 from scripts.models import *
 from scripts.model import *
@@ -24,7 +27,7 @@ if __name__ == "__main__":
 
     # 分割数据集
     dataset = DataSet()
-    dataset.load_kfold_train_val(data_df, input_shape)
+    # dataset.load_kfold_train_val(data_df, input_shape)
 
     # 创建模型
     compile_model = get_compile_model('basic', input_shape, len(label_list[0]))
@@ -32,23 +35,22 @@ if __name__ == "__main__":
     model = Model(compile_model, output_path)
 
     # 训练模型
-    model.fit(dataset, epochs=1)
+    # model.fit(dataset, epochs=1)
 
+    # 加载模型权值
+    model.load_weights(output_path + "weights.best_01-0.30.hdf5")
+
+    # 测试
     test_path = os.path.join('/'.join(path), 'seedling/input/test/')
     test_df = get_test_df(test_path)
 
-    test_raw_lst = []
-    test_id_lst = []
-    for path in test_df['Path']:
-        test_img = cv2.resize(cv2.imread(path), (input_shape[0], input_shape[1]))
-        test_img /= 255
-        test_raw_lst.append(test_img.ravel())
-        test_id_lst.append(path.split('/')[-1])
+    dataset.load_test(test_df, input_shape)
 
     # 预测
-    pred_code = model.predict(test_raw_lst)
-    pred_label = label.decode(pred_code)
+    pred_Y = model.predict(dataset.test_datas)
+    pred_label = label.decode(pred_Y)
 
-    res = {'file': test_id_lst, 'species': pred_label}
+    # 保存预测值
+    res = {'file': test_df['Name'], 'species': pred_label}
     res = pd.DataFrame(res)
     res.to_csv(output_path + "result.csv", index=False)

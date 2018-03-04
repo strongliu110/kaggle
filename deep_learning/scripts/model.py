@@ -52,6 +52,12 @@ class Model(object):
 
         return history
 
-    def predict(self, test_datas):
-        return self.model.predict(test_datas)
+    def load_weights(self, file_path):
+        self.model.load_weights(file_path)
+        print("load weights success")
+
+    def predict(self, test_datas, batch_size=32):
+        pred_Y = self.model.predict(test_datas, batch_size=batch_size)
+        print("predict success")
+        return pred_Y
 
