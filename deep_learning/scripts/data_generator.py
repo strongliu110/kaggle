@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from keras.preprocessing.image import ImageDataGenerator
 
 
