@@ -5,8 +5,7 @@ import pandas as pd
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 import os
 
-from scripts.data_generator import train_generator
-from scripts.data_generator import val_generator
+from data_generator import train_generator, val_generator
 
 
 class Model(object):

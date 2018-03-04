@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import os
 
-from scripts.data_load import get_data_df, get_test_df
-from scripts.label_encode import Label
-from scripts.dataset import DataSet
-from scripts.models import get_compile_model
-from scripts.model import Model
+from data_load import get_data_df, get_test_df
+from label_encode import Label
+from dataset import DataSet
+from models import get_compile_model
+from model import Model
 
 if __name__ == "__main__":
     # 数据加载

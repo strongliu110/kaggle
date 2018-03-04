@@ -2,10 +2,9 @@
 
 import numpy as np
 import pandas as pd
-
 import cv2
 
-from scripts.data_load import get_kfold_train_val_idx
+from data_load import get_kfold_train_val_idx
 
 
 class DataSet(object):
