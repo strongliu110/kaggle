@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
+import os
 
-from scripts.data_load import *
-from scripts.models import *
-from scripts.model import *
-from scripts.dataset import *
+from scripts.data_load import get_data_df, get_test_df
+from scripts.label_encode import Label
+from scripts.dataset import DataSet
+from scripts.models import get_compile_model
+from scripts.model import Model
 
 if __name__ == "__main__":
     # 数据加载
@@ -27,7 +29,7 @@ if __name__ == "__main__":
 
     # 分割数据集
     dataset = DataSet()
-    # dataset.load_kfold_train_val(data_df, input_shape)
+    dataset.load_kfold_train_val(data_df, input_shape)
 
     # 创建模型
     compile_model = get_compile_model('basic', input_shape, len(label_list[0]))
@@ -35,10 +37,10 @@ if __name__ == "__main__":
     model = Model(compile_model, output_path)
 
     # 训练模型
-    # model.fit(dataset, epochs=1)
+    model.fit(dataset, epochs=1)
 
     # 加载模型权值
-    model.load_weights(output_path + "weights.best_01-0.30.hdf5")
+    # model.load_weights(output_path + "weights.best_01-0.30.hdf5")
 
     # 测试
     test_path = os.path.join('/'.join(path), 'seedling/input/test/')
