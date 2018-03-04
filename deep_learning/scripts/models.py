@@ -75,6 +75,9 @@ def get_compile_model(arch, input_shape, num_classes, opt="adam"):
     else:
         model = predefined_model(arch, input_shape, num_classes)
 
+    print("select arch: {}".format(arch))
+    model.summary()
+
     # 数据稀疏时，推荐采用自适应算法：RMSprop，Adam. lr:学习率, epsilon:防止除0错误
     if opt == "sgd":
         optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)  # 用时长，可能困于鞍点
@@ -84,6 +87,9 @@ def get_compile_model(arch, input_shape, num_classes, opt="adam"):
         optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
     else:
         raise Exception("Not supported opt: {}".format(opt))
+
+    print("select opt: {}".format(arch))
+    print(optimizer.get_config())
 
     if num_classes == 2:
         model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
