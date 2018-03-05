@@ -12,6 +12,7 @@ from keras.layers import Dropout
 from keras.layers import Flatten
 from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
+from keras.layers.normalization import BatchNormalization
 
 from keras.optimizers import SGD
 from keras.optimizers import RMSprop
@@ -46,21 +47,20 @@ def predefined_model(arch, input_shape, num_classes):
 def basic_model(input_shape, num_classes, filters=64, kernel=3):
     model = Sequential()
 
-    model.add(Conv2D(filters=filters, kernel_size=(kernel, kernel), input_shape=input_shape, activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(filters=filters, kernel_size=(kernel, kernel), activation='relu'))
+    model.add(Conv2D(filters, (kernel, kernel), activation='relu', input_shape=input_shape))
+    model.add(Conv2D(filters, (kernel, kernel), activation='relu'))
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.25))
 
-    model.add(Conv2D(filters=filters * 2, kernel_size=(kernel, kernel), activation='relu'))
+    model.add(Conv2D(filters * 2, (kernel, kernel), activation='relu'))
+    model.add(Conv2D(filters * 2, (kernel, kernel), activation='relu'))
     model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(filters=filters * 2, kernel_size=(kernel, kernel), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.25))
 
-    model.add(Conv2D(filters=filters * 4, kernel_size=(kernel, kernel), activation='relu'))
+    model.add(Conv2D(filters * 4, (kernel, kernel), activation='relu'))
+    model.add(Conv2D(filters * 4, (kernel, kernel), activation='relu'))
     model.add(MaxPooling2D((2, 2)))
-    model.add(Conv2D(filters=filters * 4, kernel_size=(kernel, kernel), activation='relu'))
-    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(256, activation="relu"))
@@ -71,9 +71,41 @@ def basic_model(input_shape, num_classes, filters=64, kernel=3):
     return model
 
 
+def basic_model_BN(input_shape, num_classes, filters=64, kernel=3):
+    model = Sequential()
+
+    model.add(Conv2D(filters, (kernel, kernel), activation='relu', input_shape=input_shape))
+    model.add(BatchNormalization(axis=3))
+    model.add(Conv2D(filters, (kernel, kernel), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(BatchNormalization(axis=3))
+
+    model.add(Conv2D(filters * 2, (kernel, kernel), activation='relu'))
+    model.add(BatchNormalization(axis=3))
+    model.add(Conv2D(filters * 2, (kernel, kernel), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(BatchNormalization(axis=3))
+
+    model.add(Conv2D(filters * 4, (kernel, kernel), activation='relu'))
+    model.add(BatchNormalization(axis=3))
+    model.add(Conv2D(filters * 4, (kernel, kernel), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(BatchNormalization(axis=3))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation="relu"))
+    model.add(BatchNormalization())
+
+    model.add(Dense(num_classes, activation="softmax"))
+
+    return model
+
+
 def get_compile_model(arch, input_shape, num_classes, opt="adam"):
     if arch == 'basic':
         model = basic_model(input_shape, num_classes)
+    elif arch == "basicBN":
+        model = basic_model_BN(input_shape, num_classes)
     else:
         model = predefined_model(arch, input_shape, num_classes)
 

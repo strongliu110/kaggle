@@ -35,6 +35,7 @@ class Model(object):
 
     @staticmethod
     def __generator_batch_data(data_df, select_idxs, input_shape, batch_size=32):
+        np.random.shuffle(select_idxs)  # 重洗
         loop_count = range(int(math.ceil(len(select_idxs) / batch_size)))  # 向上取整
         idx_batches = [select_idxs[range(batch_size * i, min(len(select_idxs), batch_size * (i + 1)))] for i in loop_count]
 
@@ -46,6 +47,7 @@ class Model(object):
 
     @staticmethod
     def __generator_multiple_batch_data(generator, data_df, select_idxs, input_shape, batch_size=32):
+        np.random.shuffle(select_idxs)  # 重洗
         loop_count = range(int(math.ceil(len(select_idxs) / batch_size)))  # 向上取整
         idx_batches = [select_idxs[range(batch_size * i, min(len(select_idxs), batch_size * (i + 1)))] for i in
                        loop_count]
