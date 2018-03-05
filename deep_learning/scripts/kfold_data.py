@@ -6,7 +6,7 @@ from sklearn.model_selection import StratifiedKFold
 
 
 def get_kfold_idx(df, k):
-    skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=12)
+    skf = StratifiedKFold(n_splits=k, shuffle=True, random_state=2)
     fold_lst = []
     for train_index, test_index in skf.split(df, df['Label']):
         fold_lst.append(test_index)

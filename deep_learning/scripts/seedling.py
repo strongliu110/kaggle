@@ -4,9 +4,8 @@ import numpy as np
 import pandas as pd
 import os
 
-from data_load import get_data_df, get_test_df
+from data_load import get_data_df, get_test_df, load_test_df
 from label_encode import Label
-from dataset import DataSet
 from models import get_compile_model
 from model import Model
 
@@ -29,17 +28,13 @@ if __name__ == "__main__":
     #     return train_img
     # train_df['Input'] = train_df.apply(lambda row: read_image(row.Path), axis=1)
 
-    # 分割数据集
-    dataset = DataSet()
-    dataset.load_kfold_train_val(data_df, input_shape)
-
     # 创建模型
     compile_model = get_compile_model('basic', input_shape, len(label_list[0]))
     output_path = os.path.join('/'.join(path), 'seedling/output/')
     model = Model(compile_model, output_path)
 
     # 训练模型
-    model.fit(dataset, epochs=1)
+    model.fit_multiple(data_df, input_shape, batch_size=32, epochs=1)
 
     # 加载模型权值
     # model.load_weights(output_path + "weights.best_01-0.30.hdf5")
@@ -48,10 +43,10 @@ if __name__ == "__main__":
     test_path = os.path.join('/'.join(path), 'seedling/input/test/')
     test_df = get_test_df(test_path)
 
-    dataset.load_test(test_df, input_shape)
+    test_datas = load_test_df(test_df, input_shape)
 
     # 预测
-    pred_Y = model.predict(dataset.test_datas)
+    pred_Y = model.predict(test_datas)
     pred_label = label.decode(pred_Y)
 
     # 保存预测值

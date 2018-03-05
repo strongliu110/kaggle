@@ -69,3 +69,23 @@ def get_kfold_train_val_df(data_df, k=10):
     print("train data size: {}, test data size: {}".format(train_index.shape[0], val_index.shape[0]))
     return data_df.iloc[train_index], data_df.iloc[val_index]
 
+
+def load_train_val_df(data_df, select_idxs, input_shape):
+    datas = []
+    labels = []
+    for idx in select_idxs:
+        path = data_df.loc[idx, 'Path']
+        image = cv2.resize(cv2.imread(path), (input_shape[0], input_shape[1]))
+        label = data_df.loc[idx, 'EncodeLabel']
+        datas.append(image)  # ravel:返回引用，flatten:返回拷贝
+        labels.append(label)
+    return np.array(datas), np.array(labels)
+
+
+def load_test_df(test_df, input_shape):
+    datas = []
+    for path in test_df['Path']:
+        image = cv2.resize(cv2.imread(path), (input_shape[0], input_shape[1]))
+        image = image / 255  # 归一化
+        datas.append(image)
+    return np.array(datas)
