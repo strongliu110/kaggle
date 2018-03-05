@@ -24,6 +24,6 @@ class Label(object):
         return clear_train_label.tolist()
 
     def decode(self, pred_Y):
-        pred_num = np.argmax(pred_Y, axis=1)  # # 取最大概率
+        pred_num = np.argmax(pred_Y, axis=1)  # 取最大概率
         pred_label = self.le.classes_[pred_num]
         return pred_label

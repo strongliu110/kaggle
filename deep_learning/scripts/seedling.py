@@ -12,7 +12,7 @@ from model import Model
 
 if __name__ == "__main__":
     # 数据加载
-    module_path = os.path.dirname(__file__)
+    module_path = os.path.dirname(os.path.abspath(__file__))
     path = module_path.split("/")[:-2]
     data_path = os.path.join('/'.join(path), 'seedling/input/train/')
     data_df = get_data_df(data_path)
