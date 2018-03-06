@@ -24,14 +24,11 @@ class Model(object):
                                                     factor=0.5,
                                                     min_lr=0.00001)
         # checkpoints
-        best_path = os.path.join(self.model_path, "weights.best_{epoch:02d}-{val_acc:.2f}.hdf5")
-        checkpoint = ModelCheckpoint(best_path, monitor='val_acc',
+        weights_path = os.path.join(self.model_path, "weights.best_{epoch:02d}-{val_acc:.2f}.hdf5")
+        checkpoint = ModelCheckpoint(weights_path, monitor='val_acc',
                                      verbose=1, save_best_only=True, mode='max')
-        weights_path = os.path.join(self.model_path, "weights.{epoch:02d}-{val_acc:.2f}.hdf5")
-        checkpoint_all = ModelCheckpoint(weights_path, monitor='val_acc',
-                                         verbose=1, save_best_only=False, mode='max')
         # all callbacks
-        return [checkpoint, learning_rate_reduction, checkpoint_all]
+        return [checkpoint, learning_rate_reduction]
 
     @staticmethod
     def __generator_batch_data(data_df, select_idxs, input_shape, batch_size=32):
@@ -75,6 +72,11 @@ class Model(object):
             validation_data=self.__generator_batch_data(data_df, val_indexs, input_shape),
             validation_steps=val_steps,
             callbacks=self.__register_callbacks())
+
+        history_path = os.path.join(self.model_path, "history.txt")
+        with open(history_path, 'w') as f:
+            f.write("params:" + str(history.params) + "\n")
+            f.write("history:" + str(history.history) + "\n")
 
         return history
 
