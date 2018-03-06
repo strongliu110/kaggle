@@ -77,6 +77,7 @@ def load_train_val_df(data_df, select_idxs, input_shape):
         path = data_df.loc[idx, 'Path']
         image = cv2.resize(cv2.imread(path), (input_shape[0], input_shape[1]))
         label = data_df.loc[idx, 'EncodeLabel']
+        image = image / 255  # 归一化
         datas.append(image)  # ravel:返回引用，flatten:返回拷贝
         labels.append(label)
     return np.array(datas), np.array(labels)

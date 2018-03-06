@@ -66,6 +66,9 @@ def basic_model(input_shape, num_classes, filters=64, kernel=3):
     model.add(Dense(256, activation="relu"))
     model.add(Dropout(0.5))
 
+    model.add(Dense(256, activation="relu"))
+    model.add(Dropout(0.5))
+
     model.add(Dense(num_classes, activation="softmax"))
 
     return model
@@ -96,16 +99,19 @@ def basic_model_BN(input_shape, num_classes, filters=64, kernel=3):
     model.add(Dense(256, activation="relu"))
     model.add(BatchNormalization())
 
+    model.add(Dense(256, activation="relu"))
+    model.add(BatchNormalization())
+
     model.add(Dense(num_classes, activation="softmax"))
 
     return model
 
 
-def get_compile_model(arch, input_shape, num_classes, opt="adam"):
+def get_compile_model(arch, input_shape, num_classes, filters=64, kernel=3, opt="adam"):
     if arch == 'basic':
-        model = basic_model(input_shape, num_classes)
+        model = basic_model(input_shape, num_classes, filters, kernel)
     elif arch == "basicBN":
-        model = basic_model_BN(input_shape, num_classes)
+        model = basic_model_BN(input_shape, num_classes, filters, kernel)
     else:
         model = predefined_model(arch, input_shape, num_classes)
 

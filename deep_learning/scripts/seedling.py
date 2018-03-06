@@ -21,7 +21,7 @@ if __name__ == "__main__":
     label_list = label.encode(data_df['Label'])
     data_df['EncodeLabel'] = label_list
 
-    input_shape = (200, 200, 3)
+    input_shape = (70, 70, 3)
 
     # def read_image(path):
     #     train_img = cv2.resize(cv2.imread(path), (10, 10))
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # train_df['Input'] = train_df.apply(lambda row: read_image(row.Path), axis=1)
 
     # 创建模型
-    compile_model = get_compile_model('basic', input_shape, len(label_list[0]))
+    compile_model = get_compile_model('basicBN', input_shape, len(label_list[0]), filters=64, kernel=5)
     output_path = os.path.join('/'.join(path), 'seedling/output/')
     model = Model(compile_model, output_path)
 

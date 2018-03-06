@@ -5,7 +5,7 @@ from keras.preprocessing.image import ImageDataGenerator
 
 def train_generator():
     datagen = ImageDataGenerator(
-        rescale=1. / 255,
+        # rescale=1. / 255,
         rotation_range=180,
         width_shift_range=0.1,
         height_shift_range=0.1,
@@ -20,7 +20,7 @@ def train_generator():
 
 def val_generator():
     datagen = ImageDataGenerator(
-        rescale=1. / 255
+        # rescale=1. / 255
     )
 
     return datagen
