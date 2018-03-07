@@ -52,9 +52,8 @@ class Model(object):
         while True:
             for idx_batch in idx_batches:
                 xx, yy = load_train_val_df(data_df, idx_batch, input_shape)
-                gen = generator.flow(xx, batch_size=batch_size)
+                gen = generator.flow(xx, batch_size=idx_batch.size)
                 xx_gen = gen.next()
-
                 yield (xx_gen, yy)
 
     def fit(self, data_df, input_shape, batch_size=32, epochs=1):
