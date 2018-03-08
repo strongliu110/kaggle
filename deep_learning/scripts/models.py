@@ -128,7 +128,7 @@ def get_compile_model(arch, input_shape, num_classes, filters=64, kernel=3, opt=
     else:
         raise Exception("Not supported opt: {}".format(opt))
 
-    print("select opt: {}".format(arch))
+    print("select opt: {}".format(opt))
     print(optimizer.get_config())
 
     if num_classes == 2:
