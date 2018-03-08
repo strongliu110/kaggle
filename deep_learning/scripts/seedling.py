@@ -33,6 +33,9 @@ if __name__ == "__main__":
     output_path = os.path.join('/'.join(path), 'seedling/output/')
     model = Model(compile_model, output_path)
 
+    # 加载权值
+    # model.load_weights()
+
     # 训练模型
     model.fit_multiple(data_df, input_shape, batch_size=32, epochs=1)
 
