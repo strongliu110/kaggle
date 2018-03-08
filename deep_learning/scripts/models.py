@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from keras.applications.xception import Xception
 from keras.applications.vgg16 import VGG16
 from keras.applications.vgg19 import VGG19
 from keras.applications.resnet50 import ResNet50
@@ -19,17 +20,22 @@ from keras.optimizers import RMSprop
 from keras.optimizers import Adam
 
 
-def predefined_model(arch, input_shape, num_classes):
-    if arch == 'vgg16':
-        model = VGG16(weights='imagenet', include_top=False, input_shape=input_shape)
+def predefined_model(arch, input_shape, num_classes, pooling=None):
+    if arch == 'xception':
+        model = Xception(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
+    elif arch == 'vgg16':
+        model = VGG16(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     elif arch == 'vgg19':
-        model = VGG19(weights='imagenet', include_top=False, input_shape=input_shape)
+        model = VGG19(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     elif arch == 'resnet50':
-        model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
+        model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     elif arch == 'InceptionV3':
-        model = InceptionV3(weights='imagenet', include_top=False, input_shape=input_shape)
+        model = InceptionV3(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     else:
         raise Exception("Not supported architecture: {}".format(arch))
+
+    # for layer in model.layers:
+    #     layer.trainable = False  # 固化
 
     x = model.output
 

@@ -64,12 +64,6 @@ def get_train_val_df(data_df):
     return train_df, val_df, train_label, val_label
 
 
-def get_kfold_train_val_df(data_df, k=10):
-    train_index, val_index = get_kfold_train_val_idx(data_df, k)
-    print("train data size: {}, test data size: {}".format(train_index.shape[0], val_index.shape[0]))
-    return data_df.iloc[train_index], data_df.iloc[val_index]
-
-
 def load_train_val_df(data_df, select_idxs, input_shape):
     datas = []
     labels = []
