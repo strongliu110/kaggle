@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # train_df['Input'] = train_df.apply(lambda row: read_image(row.Path), axis=1)
 
     # 创建模型
-    compile_model = get_compile_model('xception', input_shape, len(label_list[0]), filters=64, kernel=5)
+    compile_model = get_compile_model('xception', input_shape, len(label_list[0]), filters=64, kernel=3)
     output_path = os.path.join('/'.join(path), 'seedling/output/')
     model = Model(compile_model, output_path)
 
@@ -37,10 +37,10 @@ if __name__ == "__main__":
     # model.load_weights()
 
     # 训练模型
-    model.fit_multiple(data_df, input_shape, batch_size=32, epochs=1)
+    model.fit_multiple(data_df, input_shape, batch_size=64, epochs=10)
 
     # 加载模型权值
-    # model.load_weights(output_path + "weights.best_01-0.30.hdf5")
+    model.load_weights(output_path + "weights.best_01-0.12.hdf5")
 
     # 测试
     test_path = os.path.join('/'.join(path), 'seedling/input/test/')

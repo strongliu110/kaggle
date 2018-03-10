@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import shuffle
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 import os
 import math
@@ -92,10 +93,10 @@ class Model(object):
         val_gen = val_generator()
 
         history = self.model.fit_generator(
-            generator=self.__generator_multiple_batch_data(train_gen, data_df, train_indexs, input_shape),
+            generator=self.__generator_multiple_batch_data(train_gen, data_df, train_indexs, input_shape, batch_size),
             steps_per_epoch=steps,
             epochs=epochs,
-            validation_data=self.__generator_multiple_batch_data(val_gen, data_df, val_indexs, input_shape),
+            validation_data=self.__generator_multiple_batch_data(val_gen, data_df, val_indexs, input_shape, batch_size),
             validation_steps=val_steps,
             callbacks=self.__register_callbacks())
 
