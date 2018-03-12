@@ -21,7 +21,7 @@ if __name__ == "__main__":
     label_list = label.encode(data_df['Label'])
     data_df['EncodeLabel'] = label_list
 
-    input_shape = (299, 299, 3)
+    input_shape = (70, 70, 3)
 
     # def read_image(path):
     #     train_img = cv2.resize(cv2.imread(path), (10, 10))
@@ -29,18 +29,15 @@ if __name__ == "__main__":
     # train_df['Input'] = train_df.apply(lambda row: read_image(row.Path), axis=1)
 
     # 创建模型
-    compile_model = get_compile_model('xception', input_shape, len(label_list[0]), filters=64, kernel=3)
+    compile_model = get_compile_model('basic', input_shape, len(label_list[0]), filters=64, kernel=3)
     output_path = os.path.join('/'.join(path), 'seedling/output/')
     model = Model(compile_model, output_path)
 
     # 加载权值
-    # model.load_weights()
+    # model.load_weights(output_path + "weights.best_01-0.12.hdf5")
 
     # 训练模型
     model.fit_multiple(data_df, input_shape, batch_size=64, epochs=10)
-
-    # 加载模型权值
-    model.load_weights(output_path + "weights.best_01-0.12.hdf5")
 
     # 测试
     test_path = os.path.join('/'.join(path), 'seedling/input/test/')
