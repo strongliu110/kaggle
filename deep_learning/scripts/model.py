@@ -3,33 +3,47 @@
 import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import (ReduceLROnPlateau, ModelCheckpoint, EarlyStopping, TensorBoard)
 import os
 import math
 
 from data_load import get_kfold_train_val_idx, load_train_val_df
-from data_generator import train_generator, val_generator
+from data_generator import image_generator
 
 
 class Model(object):
 
-    def __init__(self, model, model_path=''):
+    def __init__(self, model, save_path=''):
         self.model = model
-        self.model_path = model_path
+        self.save_path = save_path
 
     def __register_callbacks(self):
         # learning rate reduction
-        learning_rate_reduction = ReduceLROnPlateau(monitor='val_acc',
+        lr_reduction = ReduceLROnPlateau(monitor='val_acc',
                                                     patience=3,
                                                     verbose=1,
                                                     factor=0.5,
                                                     min_lr=0.00001)
         # checkpoints
-        weights_path = os.path.join(self.model_path, "weights.best_{epoch:02d}-{val_acc:.2f}.hdf5")
+        weights_path = os.path.join(self.save_path, "weights/best_{epoch:02d}-{val_acc:.2f}.hdf5")
         checkpoint = ModelCheckpoint(weights_path, monitor='val_acc',
                                      verbose=1, save_best_only=True, mode='max')
+
+        # early_stop
+        early_stop = EarlyStopping(monitor='val_loss', patience=30)
+
+        # tensorboard
+        tensorBoard_path = os.path.join(self.save_path, "logs")
+        tensorboard = TensorBoard(write_grads=True, log_dir=tensorBoard_path)
+
         # all callbacks
-        return [checkpoint, learning_rate_reduction]
+        return [checkpoint, lr_reduction, early_stop, tensorboard]
+
+    def __save_history(self, history):
+        history_path = os.path.join(self.save_path, "history.txt")
+        with open(history_path, 'w') as f:
+            f.write("params:" + str(history.params) + "\n")
+            f.write("history:" + str(history.history) + "\n")
 
     @staticmethod
     def __generator_batch_data(data_df, select_idxs, input_shape, batch_size=32):
@@ -73,10 +87,7 @@ class Model(object):
             validation_steps=val_steps,
             callbacks=self.__register_callbacks())
 
-        history_path = os.path.join(self.model_path, "history.txt")
-        with open(history_path, 'w') as f:
-            f.write("params:" + str(history.params) + "\n")
-            f.write("history:" + str(history.history) + "\n")
+        self.__save_history(history)
 
         return history
 
@@ -89,8 +100,8 @@ class Model(object):
         val_steps = len(val_indexs) / batch_size
 
         # generator
-        train_gen = train_generator()
-        val_gen = val_generator()
+        train_gen = image_generator()
+        val_gen = image_generator()
 
         history = self.model.fit_generator(
             generator=self.__generator_multiple_batch_data(train_gen, data_df, train_indexs, input_shape, batch_size),
@@ -99,6 +110,28 @@ class Model(object):
             validation_data=self.__generator_multiple_batch_data(val_gen, data_df, val_indexs, input_shape, batch_size),
             validation_steps=val_steps,
             callbacks=self.__register_callbacks())
+
+        self.__save_history(history)
+
+        return history
+
+    def fit_disk(self, input_shape, batch_size=32, epochs=1):
+        # generator
+        train_gen = image_generator()
+        val_gen = image_generator()
+
+        train_generator = train_gen.flow_from_directory(directory='data/train',
+                                                        target_size=(input_shape[0], input_shape[1]),
+                                                        batch_size=batch_size)
+        val_generator = val_gen.flow_from_directory(directory='data/validation',
+                                                    target_size=(input_shape[0], input_shape[1]),
+                                                    batch_size=batch_size)
+        history = self.model.fit_generator(generator=train_generator,
+                                           validation_data=val_generator,
+                                           epochs=epochs,
+                                           callbacks=self.__register_callbacks())
+
+        self.__save_history(history)
 
         return history
 

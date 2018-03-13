@@ -5,6 +5,7 @@ from keras.applications.vgg16 import VGG16
 from keras.applications.vgg19 import VGG19
 from keras.applications.resnet50 import ResNet50
 from keras.applications.inception_v3 import InceptionV3
+from keras.applications.densenet import DenseNet121, DenseNet169
 from keras.models import Model
 
 from keras.models import Sequential
@@ -15,12 +16,10 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 
-from keras.optimizers import SGD
-from keras.optimizers import RMSprop
-from keras.optimizers import Adam
+from keras import optimizers
 
 
-def predefined_model(arch, input_shape, num_classes, pooling=None):
+def __pretrained_model(arch, input_shape, num_classes, pooling='avg'):
     if arch == 'xception':
         model = Xception(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     elif arch == 'vgg16':
@@ -29,8 +28,12 @@ def predefined_model(arch, input_shape, num_classes, pooling=None):
         model = VGG19(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     elif arch == 'resnet50':
         model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
-    elif arch == 'InceptionV3':
+    elif arch == 'inceptionV3':
         model = InceptionV3(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
+    elif arch == 'densenet121':
+        return DenseNet121(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
+    elif arch == 'densenet169':
+        return DenseNet169(weights='imagenet', include_top=False, input_shape=input_shape, pooling=pooling)
     else:
         raise Exception("Not supported architecture: {}".format(arch))
 
@@ -39,7 +42,9 @@ def predefined_model(arch, input_shape, num_classes, pooling=None):
 
     x = model.output
 
-    x = Flatten()(x)
+    if arch == 'densenet169' or arch == 'densenet121':
+        x = Flatten()(x)
+
     x = Dense(256, activation='relu')(x)
     x = Dropout(0.5)(x)
 
@@ -50,7 +55,7 @@ def predefined_model(arch, input_shape, num_classes, pooling=None):
     return model
 
 
-def basic_model(input_shape, num_classes, filters=64, kernel=3):
+def __basic_model(input_shape, num_classes, filters=64, kernel=3):
     model = Sequential()
 
     model.add(Conv2D(filters, (kernel, kernel), activation='relu', input_shape=input_shape))
@@ -80,7 +85,7 @@ def basic_model(input_shape, num_classes, filters=64, kernel=3):
     return model
 
 
-def basic_model_BN(input_shape, num_classes, filters=64, kernel=3):
+def __basic_model_BN(input_shape, num_classes, filters=64, kernel=3):
     model = Sequential()
 
     model.add(Conv2D(filters, (kernel, kernel), activation='relu', input_shape=input_shape))
@@ -113,29 +118,39 @@ def basic_model_BN(input_shape, num_classes, filters=64, kernel=3):
     return model
 
 
-def get_compile_model(arch, input_shape, num_classes, filters=64, kernel=3, opt="adam"):
-    if arch == 'basic':
-        model = basic_model(input_shape, num_classes, filters, kernel)
-    elif arch == "basicBN":
-        model = basic_model_BN(input_shape, num_classes, filters, kernel)
-    else:
-        model = predefined_model(arch, input_shape, num_classes)
-
-    print("select arch: {}".format(arch))
-    model.summary()
-
+def __get_optimizer(opt='adam'):
     # 数据稀疏时，推荐采用自适应算法：RMSprop，Adam. lr:学习率, epsilon:防止除0错误
     if opt == "sgd":
-        optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)  # 用时长，可能困于鞍点
+        optimizer = optimizers.SGD(lr=0.01)  # 用时长，可能困于鞍点
     elif opt == "rmsProp":
-        optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-06)  # RNN效果好
+        optimizer = optimizers.RMSprop(lr=0.001)  # RNN效果好
     elif opt == "adam":
-        optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+        optimizer = optimizers.Adam(lr=0.001)
+    elif opt == 'adagrad':
+        return optimizers.Adagrad(lr=0.01)
+    elif opt == 'adadelta':
+        return optimizers.Adadelta(lr=1.0)
     else:
         raise Exception("Not supported opt: {}".format(opt))
 
     print("select opt: {}".format(opt))
     print(optimizer.get_config())
+
+    return optimizer
+
+
+def get_compile_model(arch, input_shape, num_classes, filters=64, kernel=3, opt="adam"):
+    if arch == 'basic':
+        model = __basic_model(input_shape, num_classes, filters, kernel)
+    elif arch == "basicBN":
+        model = __basic_model_BN(input_shape, num_classes, filters, kernel)
+    else:
+        model = __pretrained_model(arch, input_shape, num_classes)
+
+    print("select arch: {}".format(arch))
+    model.summary()
+
+    optimizer = __get_optimizer(opt)
 
     if num_classes == 2:
         model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])

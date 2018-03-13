@@ -3,10 +3,10 @@
 from keras.preprocessing.image import ImageDataGenerator
 
 
-def train_generator():
+def image_generator():
     datagen = ImageDataGenerator(
         rescale=1. / 255,  # 缩放因子
-        rotation_range=180,  # 旋转角度
+        rotation_range=360,  # 旋转角度
         width_shift_range=0.2,  # 水平偏移
         height_shift_range=0.2,  # 垂直偏移
         shear_range=0.2,  # 倾斜
@@ -18,10 +18,3 @@ def train_generator():
 
     return datagen
 
-
-def val_generator():
-    datagen = ImageDataGenerator(
-        rescale=1. / 255
-    )
-
-    return datagen
