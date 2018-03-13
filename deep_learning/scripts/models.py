@@ -6,8 +6,8 @@ from keras.applications.vgg19 import VGG19
 from keras.applications.resnet50 import ResNet50
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications.densenet import DenseNet121, DenseNet169
-from keras.models import Model
 
+from keras.models import Model, load_model
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
@@ -17,6 +17,8 @@ from keras.layers.convolutional import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 
 from keras import optimizers
+
+from ensemble import MeanEnsemble
 
 
 def __pretrained_model(arch, input_shape, num_classes, pooling='avg'):
@@ -158,3 +160,14 @@ def get_compile_model(arch, input_shape, num_classes, filters=64, kernel=3, opt=
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
+
+
+def load_pretrained_models(model_paths):
+    if len(model_paths) <= 1:
+        return load_model(model_paths)
+
+    models = []
+    for path in model_paths:
+        models.append(load_model(path))
+
+    return MeanEnsemble(models)

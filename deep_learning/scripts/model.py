@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
-from keras.callbacks import (ReduceLROnPlateau, ModelCheckpoint, EarlyStopping, TensorBoard)
+from keras.callbacks import (ReduceLROnPlateau, ModelCheckpoint, EarlyStopping, CSVLogger, TensorBoard)
 import os
 import math
 
@@ -19,28 +19,29 @@ class Model(object):
 
     def __register_callbacks(self):
         # learning rate reduction
-        lr_reduction = ReduceLROnPlateau(monitor='val_acc',
-                                                    patience=3,
-                                                    verbose=1,
-                                                    factor=0.5,
-                                                    min_lr=0.00001)
+        lr_reduction = ReduceLROnPlateau(monitor='val_acc', patience=3, verbose=1,
+                                         factor=0.5, min_lr=0.00001)
         # checkpoints
-        weights_path = os.path.join(self.save_path, "weights/best_{epoch:02d}-{val_acc:.2f}.hdf5")
+        weights_path = os.path.normpath(os.path.join(self.save_path, "weights.best_{epoch:02d}-{val_acc:.2f}.hdf5"))
         checkpoint = ModelCheckpoint(weights_path, monitor='val_acc',
                                      verbose=1, save_best_only=True, mode='max')
 
         # early_stop
         early_stop = EarlyStopping(monitor='val_loss', patience=30)
 
+        # history
+        logger_path = os.path.normpath(os.path.join(self.save_path, "history.csv"))
+        logger = CSVLogger(logger_path)
+
         # tensorboard
-        tensorBoard_path = os.path.join(self.save_path, "logs")
+        tensorBoard_path = os.path.normpath(os.path.join(self.save_path, "logs"))
         tensorboard = TensorBoard(write_grads=True, log_dir=tensorBoard_path)
 
         # all callbacks
-        return [checkpoint, lr_reduction, early_stop, tensorboard]
+        return [checkpoint, lr_reduction, early_stop, logger, tensorboard]
 
     def __save_history(self, history):
-        history_path = os.path.join(self.save_path, "history.txt")
+        history_path = os.path.normpath(os.path.join(self.save_path, "history.txt"))
         with open(history_path, 'w') as f:
             f.write("params:" + str(history.params) + "\n")
             f.write("history:" + str(history.history) + "\n")
@@ -139,8 +140,8 @@ class Model(object):
         self.model.load_weights(file_path)
         print("load weights success")
 
-    def predict(self, test_datas, batch_size=32):
-        pred_Y = self.model.predict(test_datas, batch_size=batch_size)
+    def predict(self, X, batch_size=32):
+        pred_y = self.model.predict(X, batch_size=batch_size)
         print("predict success")
-        return pred_Y
+        return pred_y
 
