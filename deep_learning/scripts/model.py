@@ -22,12 +22,14 @@ class Model(object):
         lr_reduction = ReduceLROnPlateau(monitor='val_acc', patience=3, verbose=1,
                                          factor=0.5, min_lr=0.00001)
         # checkpoints
-        weights_path = os.path.normpath(os.path.join(self.save_path, "weights.best_{epoch:02d}-{val_acc:.2f}.hdf5"))
-        checkpoint = ModelCheckpoint(weights_path, monitor='val_acc',
-                                     verbose=1, save_best_only=True, mode='max')
+        model_best_path = os.path.normpath(os.path.join(self.save_path, "models.best_weights.hdf5"))
+        model_best = ModelCheckpoint(model_best_path, monitor='val_acc', verbose=1, save_best_only=True)
+
+        weights_path = os.path.normpath(os.path.join(self.save_path, "models.{epoch:02d}-{val_acc:.2f}.hdf5"))
+        models = ModelCheckpoint(weights_path, monitor='val_acc', save_best_only=False)
 
         # early_stop
-        early_stop = EarlyStopping(monitor='val_loss', patience=30)
+        early_stop = EarlyStopping(monitor='val_acc', patience=30)
 
         # history
         logger_path = os.path.normpath(os.path.join(self.save_path, "history.csv"))
@@ -38,7 +40,7 @@ class Model(object):
         tensorboard = TensorBoard(write_grads=True, log_dir=tensorBoard_path)
 
         # all callbacks
-        return [checkpoint, lr_reduction, early_stop, logger, tensorboard]
+        return [lr_reduction, model_best, models, early_stop, logger, tensorboard]
 
     def __save_history(self, history):
         history_path = os.path.normpath(os.path.join(self.save_path, "history.txt"))
